@@ -12,7 +12,8 @@ C_WowTokenPublic.UpdateMarketPrice()
 local marketPrice = C_WowTokenPublic.GetCurrentMarketPrice()
 timeSinceLastUpdate = 0
 if marketPrice then
-    res = marketPrice / (marketPrice/20)
+    print("Current Token Market Price:", marketPrice / 10000, "gold")
+    print(money.overlay)
 end
 
 
@@ -39,35 +40,26 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", ChangeCurrencyIcons)
 
--- Function to periodically update the market price of WoW tokens
+
 local function periodicUpdate()
     C_WowTokenPublic.UpdateMarketPrice()
     marketPrice = C_WowTokenPublic.GetCurrentMarketPrice()
     print("New market price =", marketPrice)
 end
 
--- Create a ticker to call the periodicUpdate function every 300 seconds
 C_Timer.NewTicker(300, periodicUpdate)
 
 
-local isUpdating = false
-
-local function EuroMoney(amount)
-    res = amount / (marketPrice/20) * 100
+local function GoblinMoney(amount)
+    res = amount / (marketPrice/20) * 100 --get silver amount digits and assign € icon to it and for copper cent icon
     return round(res,2)
 end
 
--- Function to round a number to a specified number of decimal places
 function round(num, decimals)
-    if decimals and decimals > 0 then
-        local mult = 10^(decimals)
-        return math.floor(num * mult + 0.5) / mult
-    end
-    return math.floor(num + 0.5)
-    end
+    local mult = 10^(decimals or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
 
--- Hook to update the money frame in the game UI
-local isUpdating = false
 hooksecurefunc("MoneyFrame_Update", function(frame, money)
     if not frame then
         return
@@ -75,7 +67,7 @@ hooksecurefunc("MoneyFrame_Update", function(frame, money)
 
     if type(frame) == "table" then
         local frameName = frame:GetName() or "Unknown Frame"
-        if frameName == "ContainerFrame1MoneyFrame" or frameName == "MerchantMoneyFrame" then
+        if frameName == "ContainerFrame1MoneyFrame" or frameName == "MerchantMoneyFrame"  then
             money = GetMoney()
         end
         if frameName ~= "ContainerFrame1MoneyFrame" and frameName ~= "MerchantMoneyFrame" then
@@ -88,19 +80,7 @@ hooksecurefunc("MoneyFrame_Update", function(frame, money)
     end
 
     isUpdating = true
-    local euroMoney = EuroMoney(money)
-    MoneyFrame_Update(frame, euroMoney)
-    isUpdating = false
-end)
-        end
-    end
-
-    if isUpdating then
-        return
-    end
-
-    isUpdating = true
-    local euroMoney = EuroMoney(money)
+    local euroMoney = GoblinMoney(money)
     MoneyFrame_Update(frame, euroMoney)
     isUpdating = false
 end)
